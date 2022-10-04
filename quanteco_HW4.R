@@ -4,3 +4,9 @@
 library(tidyverse)
 dat = read_csv('Bees.csv')
 dat
+
+# Bee Metadata 
+ # Sobee 
+
+
+ahsdflkjasdf;liasdjvasoidnv;lasidjvpoasdinv
