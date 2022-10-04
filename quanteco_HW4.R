@@ -6,7 +6,8 @@ dat = read_csv('Bees.csv')
 dat
 
 # Bee Metadata 
- # Sobee 
+ # Spobee = density of p larvae spores per bee 
+ # Hive = Categorical variable of hive ID (change into a factor)
+ # Infection = degree of infection -> can be turned into a yes or no 
 
 
-ahsdflkjasdf;liasdjvasoidnv;lasidjvpoasdinv
