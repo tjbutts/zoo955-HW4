@@ -108,7 +108,7 @@ library(lme4)
 # create a variable indicating whether they are infected
 
 
-beeModel <- lm(log(Spobee+0.1)~Infection * BeesN, data = dat)
+beeLM <- lm(log(Spobee+0.1)~Infection * BeesN, data = dat)
 
 beeRes = residuals(beeModel, type = 'pearson')
 
@@ -137,6 +137,67 @@ plot(beeRes~dat$Hive)
 
 dat$sporeTrans <- log(dat$Spobee+0.1)
 
-beeLME <- lmer(sporeTrans~Infection*BeesN +1|Hive, data = dat)
-beeLME <- lme(sporeTrans~Infection*BeesN +(1|Hive), data = dat)
+
+#=================================================================================#
+#==============QUESTION 7 ANSWER================================================#
+beeLME <- lmer(sporeTrans~Infection* log(BeesN) +(1|Hive), data = dat, REML = TRUE)
+#===============================================================================#
+
+
+
+
+summary(beeLME)
+
+# plot the residuals
+plot(residuals(beeLME, type = "pearson"))
+
+
+library(lmtest)
+# compare the two models using likelihood ratio test
+lrtest(beeLM, beeLME)
+
+#=================================================================================#
+#==============QUESTION 7 ANSWER================================================#
+# The full model with the random effect is better than the simple linear model because
+# p << 0.0001
+#===============================================================================#
+
+
+fitted(beeLM)
+fitted(beeLME)
+
+
+FLME <- fitted(beeLME) # get the residuals for the linear model
+RLME <- residuals(beeLME)
+
+plot(RLME~FLME, ylab = "residuals", xlab = "fitted")
+
+
+#=================================================================================#
+#==============QUESTION 7 ANSWER================================================#
+plot(RLME~dat$sporeTrans)
+plot(RLME~dat$BeesN)
+plot(RLME~dat$Hive)
+#=================================================================================#
+
+
+beeLME <- lmer(sporeTrans~Infection* log(BeesN) +(1|Hive), data = dat, REML = TRUE)
+
+#=================================================================================#
+#==============QUESTION 8 ANSWER================================================#
+beeLME_REMLFalse_noInter <- lmer(sporeTrans~Infection+ log(BeesN) +(1|Hive), data = dat, REML = FALSE)
+
+#=================================================================================#
+
+
+
+
+#=================================================================================#
+#==============QUESTION 9 ANSWER================================================#
+anova(beeLME, beeLME_REMLFalse_noInter)
+
+# The model is not improved by dropping an interaction term because the p-value = 0.78
+#=================================================================================#
+
+
 
