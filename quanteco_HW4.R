@@ -103,7 +103,7 @@ print(result) # Initial Levene Test
 # develop a simple linear model for transformed spore density
 
 library(lme4)
-library(nlme)
+#library(nlme)
 
 # create a variable indicating whether they are infected
 
@@ -121,7 +121,22 @@ plot(beeRes~dat$Hive)
 #===============================================================================#
 
 #===============================================================================#
-#==============QUESTION 3 ANSWER================================================#
-# If we apply hive as a fixed effect, 
+#==============QUESTION 4 ANSWER================================================#
+# If we apply hive as a random effect we are able to better control for
+# differences in model fit among hives. This is also useful to control for
+# non-independence among hives
 #===============================================================================#
+
+#===============================================================================#
+#==============QUESTION 5 ANSWER================================================#
+# We want to try hive as a random effect because each individual hive is only
+# one in a population of hives, and that way we can better control for differences
+# in model residuals across hive.
+#===============================================================================#
+
+
+dat$sporeTrans <- log(dat$Spobee+0.1)
+
+beeLME <- lmer(sporeTrans~Infection*BeesN +1|Hive, data = dat)
+beeLME <- lme(sporeTrans~Infection*BeesN +(1|Hive), data = dat)
 
