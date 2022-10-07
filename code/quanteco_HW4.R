@@ -31,7 +31,7 @@ variance_spo = dat %>%
   ungroup()
 variance_spo
 
-barplot(log(variance_spo$variance), ylab = 'log(variance)', xlab = 'hive') # Took log for visualization purposes # 
+barplot(log(variance_spo$variance), ylab = 'log(spore density variance)', xlab = 'hive') # Took log for visualization purposes # 
 box()
 
 # Visually variance's look heterogeneous but let's check statistically - can run a Levene's Test to confirm 
@@ -100,7 +100,9 @@ print(result) # Initial Levene Test
 # the variances were even more statistically homogenous 
 #===============================================================================# 
 
-# develop a simple linear model for transformed spore density
+#==================QUESTION 3=====================================#
+# Develop a simple linear model for transformed spore density. Include infection, number of bees, and their interaction as 
+# explanatory variables. Check for hive effect by plotting standardized residuals against hive ID. 
 
 library(lme4)
 #library(nlme)
@@ -110,9 +112,9 @@ library(lme4)
 
 beeLM <- lm(log(Spobee+0.1)~Infection * BeesN, data = dat)
 
-beeRes = residuals(beeModel, type = 'pearson')
+beeRes = residuals(beeLM, type = 'pearson')
 
-plot(beeRes~dat$Hive)
+plot(beeRes~dat$Hive, xlab = 'Hive', ylab = 'Residuals')
 
 #===============================================================================#
 #==============QUESTION 3 ANSWER================================================#
@@ -120,7 +122,12 @@ plot(beeRes~dat$Hive)
 # good amount.
 #===============================================================================#
 
+#===============QUESTION 4================================================================#
+# What are the advantages of including hive as a random effect, 
+# rather than as a fixed effect?
 #===============================================================================#
+
+
 #==============QUESTION 4 ANSWER================================================#
 # If we apply hive as a random effect we are able to better control for
 # differences in model fit among hives. This is also useful to control for
@@ -128,6 +135,8 @@ plot(beeRes~dat$Hive)
 #===============================================================================#
 
 #===============================================================================#
+# Q5. Step 3. Choose a variance structure or structures (the random 
+ # effects). What random effects do you want to try?
 #==============QUESTION 5 ANSWER================================================#
 # We want to try hive as a random effect because each individual hive is only
 # one in a population of hives, and that way we can better control for differences
@@ -138,13 +147,23 @@ plot(beeRes~dat$Hive)
 dat$sporeTrans <- log(dat$Spobee+0.1)
 
 
-#=================================================================================#
-#==============QUESTION 7 ANSWER================================================#
+#==================QUESTION 6===============================================================#
+# Q6. Step 4. Fit the "beyond optimal" ME model(s) with lmer() in the 
+#lme4 package (transformed spore density is response, fInfection01, 
+             # sBeesN, and interaction are the explanatory variables). Show your code.
+#==============QUESTION 6 ANSWER================================================#
 beeLME <- lmer(sporeTrans~Infection* log(BeesN) +(1|Hive), data = dat, REML = TRUE)
 #===============================================================================#
 
 
-
+#==============QUESTION 7==========================#
+#Compare the linear regression and ME model(s) with a 
+#likelihood ratio test, including correction for testing on the boundary 
+#if needed. Use the anova() command. This will re-fit your lmer model 
+#with maximum likelihood, but this is OK (note there are some debates 
+ #                                        about exactly how to best compare an lm and lmer model). Show your 
+#work and the results. Which random effect structure do you choose 
+#based on the results?
 
 summary(beeLME)
 
@@ -162,7 +181,11 @@ lrtest(beeLM, beeLME)
 # p << 0.0001
 #===============================================================================#
 
-
+#==================QUESTION 8===================================#
+#Check the model: plot standardized residuals vs. fitted 
+#values and vs. each predictor. (You can get standardized residuals 
+#with residuals(yourmodel, type='pearson')). How do they look?
+#=======================================================#
 fitted(beeLM)
 fitted(beeLME)
 
@@ -174,26 +197,24 @@ plot(RLME~FLME, ylab = "residuals", xlab = "fitted")
 
 
 #=================================================================================#
-#==============QUESTION 7 ANSWER================================================#
-plot(RLME~dat$sporeTrans)
+#==============QUESTION 8 ANSWER================================================#
+plot(RLME~dat$sporeTrans) 
 plot(RLME~dat$BeesN)
 plot(RLME~dat$Hive)
 #=================================================================================#
 
+#===========================Question 9================# 
+#Step 7. Re-fit the full model with ML (set REML=FALSE) and 
+#compare against a reduced model without the interaction term, also fit 
+#with ML. Use anova() to compare the models. Which model do you 
+#choose? Why?
+#======================================================#
 
 beeLME <- lmer(sporeTrans~Infection* log(BeesN) +(1|Hive), data = dat, REML = TRUE)
 
 #=================================================================================#
-#==============QUESTION 8 ANSWER================================================#
-beeLME_REMLFalse_noInter <- lmer(sporeTrans~Infection+ log(BeesN) +(1|Hive), data = dat, REML = FALSE)
-
-#=================================================================================#
-
-
-
-
-#=================================================================================#
 #==============QUESTION 9 ANSWER================================================#
+beeLME_REMLFalse_noInter <- lmer(sporeTrans~Infection+ log(BeesN) +(1|Hive), data = dat, REML = FALSE)
 anova(beeLME, beeLME_REMLFalse_noInter)
 
 # The model is not improved by dropping an interaction term because the p-value = 0.78
@@ -201,7 +222,10 @@ anova(beeLME, beeLME_REMLFalse_noInter)
 
 
 
-
+#================QUESTION 10=========================#
+#Q10. Step 8. Iterate #7 to arrive at the final model. Show your work. 
+#What is your final set of fixed effects?
+#====================================================#
 
 #=================================================================================#
 #==============QUESTION 10 ANSWER================================================#
@@ -227,7 +251,12 @@ AIC(beeLME, beeLME_REMLFalse_noInter, beeLME_REMLFalse, beeLME_REMLFalse_onlyInt
 # fixed effects was infection and the log-transformed number of bees without an interaction term
 #=================================================================================#
 
-
+#==================QUESTION 11=============================#
+#Step 9. Fit the final model with REML. Check assumptions by 
+#plotting a histogram of residuals, plotting Pearson standardized 
+#residuals vs. fitted values, and plotting Pearson standardized 
+#residuals vs. explanatory variables. Are there issues with the model? 
+ # If so, how might you address them?
 #=============================================================================#
 #==============QUESTION 11 ANSWER================================================#
 beeLME_REML_TRUE_noInter <- lmer(sporeTrans~Infection+ log(BeesN) +(1|Hive), data = dat, REML = TRUE)
@@ -250,9 +279,11 @@ plot(residuals(beeLME_REML_TRUE_noInter, type = "pearson")~log(dat$BeesN))
 # per hive
 #=============================================================================#
 
-
-
+#====================QUESTION 12=========================#
+## Q12. Step 10. Interpret the model. The summary() command is useful 
+## here. What have you learned about American Foulbrood? 
 #=============================================================================#
+
 #==============QUESTION 12 ANSWER================================================#
 summary(beeLME_REML_TRUE_noInter)
 anova(beeLME_REML_TRUE_noInter)
@@ -268,17 +299,23 @@ varExp = 5.693/totalVar
 
 #=============================================================================#
 
+#=================QUESTION 13================================# 
+#Calculate the correlation between observations from the same 
+#hive as variance(fhive random effect)/(variance(fhive random effect) + 
+#                                         variance(residual)). Given the correlation among observations from 
+#the same hive, do you think it's a good use of time to sample each 
+#hive multiple times? Why or why not?
 
 
 #=============================================================================#
 #==============QUESTION 13 ANSWER================================================#
-print(VarCorr(beeLME_REML_TRUE_noInter), comp = "Variance")
+#print(VarCorr(beeLME_REML_TRUE_noInter), comp = "Variance")
 
 #Groups   Name        Variance
 #Hive     (Intercept) 5.6929  
 #Residual             1.2624  
 
-correlation = 5.6929/(5.6929+1.2624)
+#correlation = 5.6929/(5.6929+1.2624)
 
 # Because the correlation is so high (0.82) we don't gain
 # much new information from sampling the same hive multiple times
