@@ -272,3 +272,14 @@ varExp = 5.693/totalVar
 
 #=============================================================================#
 #==============QUESTION 13 ANSWER================================================#
+print(VarCorr(beeLME_REML_TRUE_noInter), comp = "Variance")
+
+#Groups   Name        Variance
+#Hive     (Intercept) 5.6929  
+#Residual             1.2624  
+
+correlation = 5.6929/(5.6929+1.2624)
+
+# Because the correlation is so high (0.82) we don't gain
+# much new information from sampling the same hive multiple times
+
