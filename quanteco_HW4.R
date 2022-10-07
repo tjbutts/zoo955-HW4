@@ -41,9 +41,9 @@ print(result) # Non-significant so statistically variance of spore density by Hi
 
 
 #=========== Question 1 ANSWER ====================================================# 
-# The variance here is statistically homogenous but still looks pretty hetergeneous 
-#============ STILL NEED TO FIGURE OUT THE WHY ==================# 
-# (Why or Why not) --The reason here I am not sure maybe related to infection?-- 
+# The variance here is statistically homogenous but still looks pretty heterogeneous. When visualizing the variances, 
+# there is quite a bit of variation between the hives. This is likely due to differences in which hives are infected 
+# and the degree of infection between the hives causing differences in variance of spore density. 
 #=================================================================================#
 
 # Q2 - Try some transformations of the response variable to homogenize 
@@ -201,3 +201,74 @@ anova(beeLME, beeLME_REMLFalse_noInter)
 
 
 
+
+
+#=================================================================================#
+#==============QUESTION 10 ANSWER================================================#
+beeLME <- lmer(sporeTrans~Infection* log(BeesN) +(1|Hive), data = dat, REML = FALSE)
+beeLME_REMLFalse_noInter <- lmer(sporeTrans~Infection+ log(BeesN) +(1|Hive), data = dat, REML = FALSE)
+beeLME_REMLFalse <- lmer(sporeTrans~Infection* log(BeesN) +(1|Hive), data = dat, REML = FALSE)
+beeLME_REMLFalse_onlyInter <- lmer(sporeTrans~Infection: log(BeesN) +(1|Hive), data = dat, REML = FALSE)
+
+# tried one additional model with only the interaction term
+AIC(beeLME, beeLME_REMLFalse_noInter, beeLME_REMLFalse, beeLME_REMLFalse_onlyInter)
+
+#                            df      AIC
+#beeLME                      6 294.0506
+#beeLME_REMLFalse_noInter    5 292.1286
+#beeLME_REMLFalse            6 294.0506
+#beeLME_REMLFalse_onlyInter  5 292.2628
+
+# The model without an interaction term between Infection and the number 
+# of bees (transformed) is most supported by AIC. Because delta AIC between the
+# top model and the other models is <2, they are not statistically different
+# models and we would need to consider all in analysis. However, if we were to fit 
+# these models with REML the results would likely be different. Our final set of
+# fixed effects was infection and the log-transformed number of bees without an interaction term
+#=================================================================================#
+
+
+#=============================================================================#
+#==============QUESTION 11 ANSWER================================================#
+beeLME_REML_TRUE_noInter <- lmer(sporeTrans~Infection+ log(BeesN) +(1|Hive), data = dat, REML = TRUE)
+
+plot(hist(residuals(beeLME_REML_TRUE_noInter)))
+# residuals look normally distributed
+
+plot(residuals(beeLME_REML_TRUE_noInter, type = "pearson")~fitted(beeLME_REML_TRUE_noInter))
+
+# Pretty evenly distributed!
+
+# plot versus each of the explanatory variables
+plot(residuals(beeLME_REML_TRUE_noInter, type = "pearson")~dat$Hive)
+plot(residuals(beeLME_REML_TRUE_noInter, type = "pearson")~log(dat$BeesN))
+
+
+# The model seems to work pretty well across hives (which is likely because of the random effect)
+# but does not seem to work well across the number of bees. A random effect could be created for 
+# categories of bee density, or there could just be a lot of variation in the number of bees
+# per hive
+#=============================================================================#
+
+
+
+#=============================================================================#
+#==============QUESTION 12 ANSWER================================================#
+summary(beeLME_REML_TRUE_noInter)
+anova(beeLME_REML_TRUE_noInter)
+
+# The density of spores per bee increases with the number of infected bees and with
+# the number of bees in the hive. This is likely because a greater number of bees
+# the disease can spread more easily. The model also explains approximately 82% of the variation
+# in spore density from the random effect of hives alone, which according to the model
+# is related to bee density.
+
+totalVar = 5.693 +1.262
+varExp = 5.693/totalVar
+
+#=============================================================================#
+
+
+
+#=============================================================================#
+#==============QUESTION 13 ANSWER================================================#
